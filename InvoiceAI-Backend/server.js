@@ -17,9 +17,20 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-const allowedOrigins = process.env.CLIENT_ORIGIN?.split(',') || [];
+// ✅ Handle multiple allowed origins
+const allowedOrigins = (process.env.CLIENT_ORIGIN || '').split(',').map(o => o.trim());
+
 app.use(cors({
-    origin: allowedOrigins.length ? allowedOrigins : '*',
+    origin: function (origin, callback) {
+        // allow requests with no origin (like curl or Postman)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        } else {
+            return callback(new Error(`CORS blocked for origin: ${origin}`));
+        }
+    },
     credentials: true,
 }));
 
@@ -32,6 +43,7 @@ app.use('/uploads', express.static(uploadsDir));
 
 app.get('/', (_req, res) => res.json({ ok: true, service: 'invoiceai-backend' }));
 
+// Routes
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/summary', summaryRoutes);
 
