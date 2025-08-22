@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import connectDB from './config/db.js';
@@ -14,6 +15,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -40,9 +42,16 @@ app.use(morgan('dev'));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsDir = path.join(__dirname, process.env.UPLOAD_DIR || 'uploads');
+
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 app.use('/uploads', express.static(uploadsDir));
 
-app.get('/', (_req, res) => res.json({ ok: true, service: 'invoiceai-backend' }));
+app.get('/', (_req, res) =>
+    res.json({ ok: true, service: 'invoiceai-backend' })
+);
 
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/summary', summaryRoutes);
