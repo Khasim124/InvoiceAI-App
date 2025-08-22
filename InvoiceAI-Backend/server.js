@@ -17,19 +17,23 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-const allowedOrigins = (process.env.CLIENT_ORIGIN || '').split(',').map(o => o.trim());
+const allowedOrigins = (process.env.CLIENT_ORIGIN || '')
+    .split(',')
+    .map((o) => o.trim());
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        } else {
-            return callback(new Error(`CORS blocked for origin: ${origin}`));
-        }
-    },
-    credentials: true,
-}));
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin) return callback(null, true);
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            } else {
+                return callback(new Error(`CORS blocked for origin: ${origin}`));
+            }
+        },
+        credentials: true,
+    })
+);
 
 app.use(morgan('dev'));
 
