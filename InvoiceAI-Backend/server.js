@@ -11,17 +11,18 @@ import summaryRoutes from './routes/summaryRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
-
 connectDB();
 
 const app = express();
-
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+const allowedOrigins = process.env.CLIENT_ORIGIN?.split(',') || [];
 app.use(cors({
-    origin: process.env.CLIENT_ORIGIN?.split(',') || '*',
+    origin: allowedOrigins.length ? allowedOrigins : '*',
     credentials: true,
 }));
+
 app.use(morgan('dev'));
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,9 +30,7 @@ const __dirname = path.dirname(__filename);
 const uploadsDir = path.join(__dirname, process.env.UPLOAD_DIR || 'uploads');
 app.use('/uploads', express.static(uploadsDir));
 
-app.get('/', (_req, res) =>
-    res.json({ ok: true, service: 'invoiceai-backend' })
-);
+app.get('/', (_req, res) => res.json({ ok: true, service: 'invoiceai-backend' }));
 
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/summary', summaryRoutes);
