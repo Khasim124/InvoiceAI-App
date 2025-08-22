@@ -7,6 +7,7 @@ export const uploadInvoice = async (file) => {
     const response = await api.post('/invoices/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
+
     return response.data.data;
 };
 
